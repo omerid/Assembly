@@ -1,35 +1,136 @@
 INCLUDE Irvine32.inc
 
 N=7
-.data
-L=4
-R=8
-b word N
-Arr word 19, 2, 8, 16,10, 11, 32
-DiffArr word N dup(?)
 
-count			dword 0
+.data
+
+FirstLeft=0
+b word N
+
+Arr			word 19, 2, 8, 16,10, 11, 32
+DiffArr			word N dup(?)
+DupliArr		word N dup(?)
+count			word 0
 pivot			dword ?
 index_j			dword ?
 index_i			dword ?
-newChoose		dword ?
-newpivotindex	dword ?
+newpivotindex		dword ?
+tmp			word ?
+space			byte " ",13,10,0
 
 .code
 my_main PROC
 
     call	randomize
-    push	offset arr
-    push	0
-    push	6
-    call	QSort
-	mov		edx, offset arr
-	call	printArr 
+
+	push	offset Arr
+	push	offset DupliArr
+	push	lengthof N
+	call	dupArr
+
+	push	offset DupliArr
+	push	FirstLeft
+	push	dword ptr (N-1)
+	call	QuickSort
+
+	mov		edx, offset DupliArr
+    call	printarr
+	call	crlf
+
+	push	offset Arr
+	push	FirstLeft
+	push	dword ptr (N-1)
+	call	CollQuickSortSecond
+
+	mov		edx, offset Arr
+    call	printarr
+	call	crlf
+
+	push	offset DupliArr
+	push	offset Arr
+	push	offset DiffArr
+	push	dword ptr N
+	call	FindTheDiff
+
+	mov		edx, offset DiffArr
+    call	printarr
+
     call	exitProcess
 
 my_main ENDP
 
 ;------------------------------------------------------------
+
+FindTheDiff PROC
+
+	push	ebp
+	mov		ebp, esp
+
+	push	eax
+	push	ebx
+	push	ecx
+	push	edx
+
+	mov		eax, [ebp+20] ; DupliArr
+	mov		ebx, [ebp+16] ; Arr
+	mov		edx, [ebp+12] ; DiffArr
+	mov		ecx, [ebp+8] ; Size
+	
+FindDiffLoop:
+	shl ecx, 1
+	mov di, word ptr[eax+ecx-2]
+	cmp di, word ptr[ebx+ecx-2]
+	je FillDiffArray
+	mov word ptr[edx+ecx-2], 0
+	shr ecx, 1
+	loop FindDiffLoop
+
+FillDiffArray:
+	mov word ptr[edx+ecx-2], 1
+	shr ecx, 1
+	loop FindDiffLoop
+
+    pop		ecx
+    pop		edx
+	pop		ebx
+	pop		eax
+    mov		esp, ebp
+    pop		ebp
+    ret		16
+	
+FindTheDiff ENDP
+
+dupArr PROC
+
+	push	ebp
+	mov		ebp, esp
+
+	push	eax
+	push	ebx
+	push	ecx
+	push	edx
+
+	mov		eax, [ebp+16] ; Arr
+	mov		ebx, [ebp+12] ; arrcollatz
+	mov		ecx, [ebp+8]
+
+duplicateArr:
+	shl		ecx, 1
+	mov		dx, word ptr [eax+ecx-2]
+	mov		word ptr [ebx+ecx-2], dx
+	shr		ecx, 1
+	loop duplicateArr
+
+	pop		edx
+	pop		ecx
+    pop		ebx
+	pop		eax
+    mov		esp, ebp
+    pop		ebp
+    ret		12
+
+dupArr ENDP
+
 
 ; print the arr 
 printArr PROC
@@ -40,9 +141,10 @@ printArr PROC
 	mov		ecx, lengthof arr
 
 printA:
-	mov	ax, word ptr [edx+ebx]
+	mov		ax, word ptr [edx+ebx]
 	call	WriteDec
-	call	crlf
+	mov		al, space
+	call	WriteChar
 	add		ebx, 2
 	loop printA
 
@@ -53,41 +155,49 @@ printArr ENDP
 Collatz PROC
 	push	ebp
 	mov		ebp, esp
-    mov     eax, dword ptr [ebp + 8]
-    shr     eax, 1 ;check if even or not
+	push	ecx
+	push	edx
+	
+	;----------reset regsiers
+	xor		eax, eax
+
+    mov     ax, word ptr [ebp + 8] 
+    shr     ax, 1 ;check if even or not
     jnc     EvenNum ;if even
 	jmp		OddNum ;else
 	jmp     EndCollatz
 
 OddNum:
-    cmp     dword ptr [ebp + 8], 1 ;checking the stop conditions
+    cmp     word ptr [ebp + 8], 1 ;checking the stop conditions
     je      EndCollatz  
-    mov     eax, dword ptr [ebp + 8]    
+    mov     ax, word ptr [ebp + 8]    
     mov     ecx, 3
     mul     ecx
-    inc     eax
+    inc     ax
     inc     Count
-    push    eax
+    push    ax
     call    Collatz
     jmp     EndCollatz
 	
 EvenNum:
-    cmp     dword ptr [ebp + 8], 1 ; checking the stop conditions
+    cmp     word ptr [ebp + 8], 1 ; checking the stop conditions
     je      EndCollatz
-    mov     eax, dword ptr [ebp + 8]
+    mov     ax, word ptr [ebp + 8]
     mov     ecx, 2      
     xor     edx, edx
     div     ecx
     inc     Count
-    push    eax
+    push    ax
     call    Collatz
     
 
 EndCollatz:
-    mov		eax, Count
+	mov		ax, count
+    pop		edx
+    pop		ecx
     mov		esp, ebp
     pop		ebp
-    ret		4
+    ret		2
 
 Collatz ENDP
 
@@ -151,7 +261,6 @@ Ploop:
 
     mov		edi, 0 ; reset the var 
     mov		di, word ptr [esi]
-	;cmp	di, word ptr [eax]
     cmp		di, ax
     jae		continueL
     add		index_i, 2
@@ -223,7 +332,7 @@ contine:
     push	ecx
     call	Swap
     
-	mov		edx, [ebp+20] ;address of Arr - ++++++ I ADDED IT ! 150121-22:13
+	mov		edx, [ebp+20] 
     mov		ecx, lengthof arr
 
 findPivotIndexLast:
@@ -284,7 +393,7 @@ SWAP ENDP
 
 ;------------------------------------------------------------
 
-QSort PROC
+QuickSort PROC
     push	ebp
     mov		ebp ,esp
     sub		esp ,8 ; first 4 bytes for choose index, second 4 bytes for newpivotindex
@@ -324,7 +433,7 @@ QSort PROC
 ;-------------------------------------
 
     push	newpivotindex ; push new pivot index
-    call	Qsort
+    call	QuickSort
 
     push	ebx ; the address of the arr
 
@@ -338,7 +447,7 @@ QSort PROC
     ;-------------------------------------
     push	newpivotindex ; push new pivot index
     push	ecx ; push right
-    call	Qsort
+    call	QuickSort
 
 DoneQsort:
     pop		ebx
@@ -347,8 +456,258 @@ DoneQsort:
     mov		esp, ebp
     pop		ebp
     ret		12
-QSort ENDP
+QuickSort ENDP
 
 ;------------------------------------------------------------
+
+makecollatzArr PROC
+    push	ebp
+    mov	ebp ,esp
+    push ebx ; the original arr
+    push edx ; the new arr collatz position
+    push ecx ; the length of arr
+    push eax ; save the eax cuase using it in collatz
+
+
+    ;------------reset the vars
+    xor ebx,ebx
+    xor edx,edx
+    xor ecx,ecx
+    xor eax,eax
+
+    mov ebx, [ebp+14]
+    mov edx, [ebp+10]
+    movzx ecx,word ptr [ebp+8] 
+
+makecollatzArrloop:
+    
+    shl ecx, 1
+    push [ebx+ecx-2] ; arr[n-1]
+    mov count, 0
+    call collatz
+    mov word ptr[edx+ecx-2], ax
+    shr ecx, 1
+    loop makecollatzArrloop
+
+    pop eax
+    pop ecx
+    pop edx
+    pop ebx
+    mov esp, ebp
+    pop ebp
+    ret 12
+makecollatzArr ENDP
+
+;------------------------------------------------------------
+
+
+;Second Partition
+;------------------------------------------------------------
+
+
+PartitionColl PROC
+    push	ebp
+    mov		ebp, esp
+    push	ecx
+    push	edx
+    push	ebx
+    
+    mov		edx, [ebp+20] ;address of Arr
+    mov		ebx, [ebp+16] ;index Left
+    mov		ecx, [ebp+12] ;index Right
+    mov		eax, [ebp+8] ;pivot
+
+	;for relative location in arr
+	shl		ebx, 1
+	add		edx, ebx
+	shr		ebx, 1
+
+    ;for looping 
+    sub		ecx, ebx
+    inc		ecx
+
+    mov		index_j, 0 ; 
+    mov		index_i, 0 ; 
+    sub		index_i, 2 ; low-1
+
+	;moving to the right place in the arr and taking the arr[i]
+    shl		eax, 1 ; shifing left becuase the arr is word arr
+	mov		pivot, eax
+	
+	mov		ax, word ptr [edx+eax]
+	push	ax
+	push	ax
+	mov		count, 0
+	call	Collatz
+	xor		ebx, ebx
+	mov		bx, ax
+
+PloopColl: 
+
+    mov		esi, edx
+    add		esi, index_j
+    mov		edi, 0 ; reset the var 
+    mov		di, word ptr [esi]
+	push	di
+	mov		count, 0
+	call	Collatz
+    cmp		ax, bx
+    jae		continueLColl
+    add		index_i, 2
+
+    ;push	eax and ecx for saving them before the swap
+    push	ecx
+
+    ;beacuse lea dosent work with vars we save ebx and use him to reach the right index
+    ;----------------------------------
+	push	ebx
+    mov		ebx, index_i
+    lea		eax, [edx + [ebx]]
+    push	eax
+    ;----------------------------------
+    mov		ebx, index_j
+    lea		ecx, [edx + [ebx]]
+    push	ecx
+    call	Swap
+
+	pop		ebx
+    pop		ecx
+	add		index_j, 2
+    loop	PloopColl
+    Jmp		DonePartitionColl
+
+continueLColl:
+    add		index_j, 2
+    loop	PloopColl
+
+DonePartitionColl:
+
+	pop		ax
+    add		index_i, 2
+    xor		ecx, ecx
+    xor		ebx, ebx
+
+    mov		ebx, index_i
+    lea		ecx, [edx + [ebx]]
+    push	ecx
+
+	xor		ecx, ecx
+    xor		ebx, ebx
+
+;----------------------------------
+	mov		ebx, [ebp+16] ;index Left
+    mov		ecx, [ebp+12] ;index Right
+	sub		ecx, ebx
+	inc		ecx ; WE FORGET IT
+
+findPivotIndexColl:
+	
+	shl		ecx, 1
+	cmp		ax, [edx+ecx]
+	je		contineColl
+	shr		ecx, 1
+	loop	findPivotIndexColl
+
+;----------------------------------
+
+contineColl:
+
+    lea		ecx, [edx + [ecx]]
+    push	ecx
+    call	Swap
+    
+	mov		edx, [ebp+20] ;address of Arr - ++++++ I ADDED IT ! 150121-22:13
+    mov		ecx, lengthof arr
+
+findPivotIndexLastColl:
+	
+	shl		ecx, 1
+	cmp		ax, [edx+ecx]
+	je		DoneDoneColl
+	shr		ecx, 1
+	loop	findPivotIndexLastColl
+
+DoneDoneColl:
+    shr		ecx, 1
+    mov		eax, ecx ; return the pivot index
+
+    ;pop	eax ;WE CANT DO IT. WE NEED EAX ABOVE ^^^
+    pop		ebx
+    pop		edx
+    pop		ecx
+    mov		esp, ebp
+    pop		ebp
+    ret		16
+
+PartitionColl ENDP
+
+;------------------------------------------------------------
+
+CollQuickSortSecond PROC
+
+	push	ebp
+    mov		ebp ,esp
+    sub		esp ,8 ; first 4 bytes for choose index, second 4 bytes for newpivotindex
+    push	ecx
+    push	edx
+    push	ebx
+    mov		ebx, [ebp + 16] ; Arr offset
+    mov		edx, [ebp + 12] ; Left
+    mov		ecx, [ebp +8] ;Right
+
+    cmp		dx, cx
+    jge		DoneCollQuickSortSecond
+
+    push	ecx ; push right
+    push	edx ; push Left
+    call	ChooseIndex ; the return call is in ax
+    mov		[ebp-4], eax 
+
+    push	ebx ; the address of the arr
+    push	edx ; push left
+    push	ecx ; push right
+    push	[ebp-4] ; push pivot index that returned from Chooseindex
+    call	partitionColl 
+    mov		[ebp-8], eax 
+
+    push	ebx ; the address of the arr
+    push	edx ; push left
+
+;------------------------------------
+
+    push	ecx
+    mov		ecx,[ebp-8]
+    mov		newpivotindex, ecx
+    sub		newpivotindex ,1
+    pop		ecx
+
+;-------------------------------------
+
+    push	newpivotindex ; push new pivot index
+    call	collQuickSortSecond
+
+    push	ebx ; the address of the arr
+
+;------------------------------------
+
+    push	ecx
+    mov		ecx,[ebp-8]
+    mov		newpivotindex, ecx
+    add		newpivotindex ,1
+    pop		ecx
+ ;-------------------------------------
+    push	newpivotindex ; push new pivot index
+    push	ecx ; push right
+    call	collQuickSortSecond
+
+DoneCollQuickSortSecond:
+    pop		ebx
+    pop		edx
+    pop		ecx
+    mov		esp, ebp
+    pop		ebp
+    ret		12
+
+CollQuickSortSecond ENDP
 
 END my_main
