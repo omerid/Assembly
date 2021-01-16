@@ -1,0 +1,88 @@
+INCLUDE Irvine32.inc
+
+;Submit by: Omer Idel, ID: 203347794
+;This Program get a number from user and return
+;his Collatz value
+;f(n)= 0 if n=1, 1+f(n/2) if n > 1 is even, 1+f(3n+1) id n > 1 is odd
+
+.data
+MyName	BYTE "Omer Idel, ID: 203347794", 10, 13, 0
+EnterA	BYTE "Please enter a number: ", 10, 13, 0
+Res		BYTE "The collatz value is: ", 10, 13, 0
+count	WORD 0
+
+.code
+my_main PROC
+	mov		edx, offset MyName
+	call	WriteString
+
+	mov		edx, offset EnterA
+	call	WriteString
+
+	call	ReadInt 
+	push	eax
+    call	Collatz
+
+	mov		edx, offset Res
+	call	WriteString
+
+	call	WriteDec
+	call	exitProcess
+
+my_main ENDP
+
+
+;------------------------------------------------------------
+;This is the collatz function
+;input: number (2 Bytes)
+;output: ax - the collatz value
+;------------------------------------------------------------
+Collatz PROC
+	push	ebp
+	mov		ebp, esp
+	push	ecx
+	push	edx
+	
+	xor		eax, eax
+
+    mov     ax, word ptr [ebp + 8] 
+    shr     ax, 1 ;check if even or not
+    jnc     EvenNum ;if even
+	jmp		OddNum ;else
+	jmp     EndCollatz
+
+OddNum:
+    cmp     word ptr [ebp + 8], 1 ;checking the stop conditions
+    je      EndCollatz  
+    mov     ax, word ptr [ebp + 8]    
+    mov     ecx, 3
+    mul     ecx
+    inc     ax
+    inc     Count
+    push    ax
+    call    Collatz
+    jmp     EndCollatz
+	
+EvenNum:
+    cmp     word ptr [ebp + 8], 1 ; checking the stop conditions
+    je      EndCollatz
+    mov     ax, word ptr [ebp + 8]
+    mov     ecx, 2      
+    xor     edx, edx
+    div     ecx
+    inc     Count
+    push    ax
+    call    Collatz
+    
+
+EndCollatz:
+	mov		ax, count
+    pop		edx
+    pop		ecx
+    mov		esp, ebp
+    pop		ebp
+    ret		2
+
+Collatz ENDP
+
+END my_main
