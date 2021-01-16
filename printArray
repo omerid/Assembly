@@ -1,0 +1,16 @@
+printArr PROC
+
+	xor		eax, eax 
+	xor		ebx, ebx
+	xor		ecx, ecx
+	mov		ecx, lengthof arr
+
+printA:
+	mov		ax, word ptr [edx+ebx]
+	call	WriteDec
+	mov		al, space
+	call	WriteChar
+	add		ebx, 2
+	loop printA
+
+printArr ENDP
