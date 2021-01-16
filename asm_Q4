@@ -1,8 +1,18 @@
 INCLUDE Irvine32.inc
 INCLUDE asm3_Q4_data.inc
 
-.data
+;Submit by: Omer Idel, ID: 203347794
+;This program make QuickSort
+;and make Collatz QuickSort (CollQuickSort)
+;Arr array sorted by CollQuickSort function
+;DiffArr shows the differnce beetween the regualr QuickSort
+;and the Collatz QuickSort
+;if there is 0 at the i'th place - it's the same value
+;if there is 1 at the i'th place - it's not the same value
 
+.data
+MyName BYTE "Omer Idel, ID: 203347794", 10, 13, 0
+result BYTE "The Result is: ",0
 FirstLeft=0
 DupliArr		word N dup(?)
 count			word 0 ; for Collatz
@@ -35,13 +45,15 @@ my_main PROC
 	push	dword ptr N
 	call	FindTheDiff
 
+	mov		edx, offset DiffArr
     call	exitProcess
 
 my_main ENDP
 
-
 ;------------------------------------------------------------
-
+;This function find the differnce between the regular quick sort
+;and the coll quick sort
+;------------------------------------------------------------
 FindTheDiff PROC
 
 	push	ebp
@@ -71,16 +83,19 @@ FillDiffArray:
 	shr		ecx, 1
 	loop	FindDiffLoop
 
-    	pop		ecx
-    	pop		edx
+    pop		ecx
+    pop		edx
 	pop		ebx
 	pop		eax
-   	mov		esp, ebp
-    	pop		ebp
-    	ret		16
+    mov		esp, ebp
+    pop		ebp
+    ret		16
 	
 FindTheDiff ENDP
 
+;------------------------------------------------------------
+;This function make copy of arr
+;------------------------------------------------------------
 dupArr PROC
 	push	ebp
 	mov		ebp, esp
@@ -112,7 +127,8 @@ duplicateArr:
 dupArr ENDP
 
 ;------------------------------------------------------------
-
+;This is the collatz function
+;------------------------------------------------------------
 Collatz PROC
 	push	ebp
 	mov		ebp, esp
@@ -162,7 +178,8 @@ EndCollatz:
 Collatz ENDP
 
 ;------------------------------------------------------------
-
+;This function get left and right and retrun a random index beetwen those numbers
+;------------------------------------------------------------
 ChooseIndex Proc 
     push	ebp
     mov		ebp, esp
@@ -184,7 +201,9 @@ donechooswindex:
 ChooseIndex ENDP
 
 ;------------------------------------------------------------
-
+;This is the regular partion
+;This partion return the index of the new location of pivot 
+;------------------------------------------------------------
 Partition PROC
     push	ebp
     mov		ebp, esp
@@ -314,42 +333,8 @@ DoneDone:
 Partition ENDP
 
 ;------------------------------------------------------------
-
-SWAP PROC
-    push	ebp
-    mov		ebp, esp
- 
-    sub		esp, 4 
-
-    push	eax
-    push	ebx
-    push	edx
-
-    xor		eax, eax
-    xor		ebx, ebx
-    xor		edx, edx
-
-    mov		ebx, [ebp+12]		
-    mov		ax, WORD ptr [ebx]    
-    mov		word ptr [ebp-4], ax   
-    mov		edx, [ebp+8]         
-
-    mov		ax, WORD ptr [edx]     
-    mov		word ptr [ebx], ax   
-    mov		ax, word ptr [ebp-4]
-    mov		word ptr [edx], ax    
-    
-    pop		edx
-    pop		ebx
-    pop		eax
-    mov		esp, ebp
-    pop		ebp
-    ret		8
-    
-SWAP ENDP
-
+;This is the QuickSort
 ;------------------------------------------------------------
-
 QuickSort PROC
     push	ebp
     mov		ebp ,esp
@@ -408,10 +393,10 @@ DoneQsort:
     ret		12
 QuickSort ENDP
 
-;Second Partition
 ;------------------------------------------------------------
-
-
+;This is the partion for collQuickSort
+;This partion return the index of the new location of pivot 
+;------------------------------------------------------------
 PartitionColl PROC
     push	ebp
     mov		ebp, esp
@@ -545,7 +530,8 @@ DoneDoneColl:
 PartitionColl ENDP
 
 ;------------------------------------------------------------
-
+;This is the coolQuickSort
+;------------------------------------------------------------
 CollQuickSortSecond PROC
 
 	push	ebp
@@ -606,5 +592,41 @@ DoneCollQuickSortSecond:
     ret		12
 
 CollQuickSortSecond ENDP
+
+;------------------------------------------------------------
+;This Swap function
+;------------------------------------------------------------
+SWAP PROC
+    push	ebp
+    mov		ebp, esp
+ 
+    sub		esp, 4 
+
+    push	eax
+    push	ebx
+    push	edx
+
+    xor		eax, eax
+    xor		ebx, ebx
+    xor		edx, edx
+
+    mov		ebx, [ebp+12]		
+    mov		ax, WORD ptr [ebx]    
+    mov		word ptr [ebp-4], ax   
+    mov		edx, [ebp+8]         
+
+    mov		ax, WORD ptr [edx]     
+    mov		word ptr [ebx], ax   
+    mov		ax, word ptr [ebp-4]
+    mov		word ptr [edx], ax    
+    
+    pop		edx
+    pop		ebx
+    pop		eax
+    mov		esp, ebp
+    pop		ebp
+    ret		8
+    
+SWAP ENDP
 
 END my_main
