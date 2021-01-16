@@ -11,9 +11,9 @@ INCLUDE asm3_Q4_data.inc
 ;if there is 1 at the i'th place - it's not the same value
 
 .data
-MyName BYTE "Omer Idel, ID: 203347794", 10, 13, 0
-result BYTE "The Result is: ",0
 FirstLeft=0
+MyName BYTE		"Omer Idel, ID: 203347794", 10, 13, 0
+result BYTE		"The Result is: ",0
 DupliArr		word N dup(?)
 count			word 0 ; for Collatz
 newpivotindex	dword ?
@@ -53,6 +53,8 @@ my_main ENDP
 ;------------------------------------------------------------
 ;This function find the differnce between the regular quick sort
 ;and the coll quick sort
+;input: 3 Arrays - DupliArr, Arr, DiffArr and the Size (16 Bytes)
+;output: Nothing
 ;------------------------------------------------------------
 FindTheDiff PROC
 
@@ -95,6 +97,8 @@ FindTheDiff ENDP
 
 ;------------------------------------------------------------
 ;This function make copy of arr
+;input: 2 Arrays - DupliArr, Arr and Size (12 Bytes)
+;output: Nothing
 ;------------------------------------------------------------
 dupArr PROC
 	push	ebp
@@ -105,8 +109,8 @@ dupArr PROC
 	push	ecx
 	push	edx
 
-	mov		eax, [ebp+16] ; Arr
-	mov		ebx, [ebp+12] ; arrcollatz
+	mov		eax, [ebp+16] 
+	mov		ebx, [ebp+12] 
 	mov		ecx, [ebp+8]
 
 duplicateArr:
@@ -128,6 +132,8 @@ dupArr ENDP
 
 ;------------------------------------------------------------
 ;This is the collatz function
+;input: number (2 Bytes)
+;output: ax - the collatz value
 ;------------------------------------------------------------
 Collatz PROC
 	push	ebp
@@ -179,6 +185,8 @@ Collatz ENDP
 
 ;------------------------------------------------------------
 ;This function get left and right and retrun a random index beetwen those numbers
+;input: left, right (8 Bytes)
+;output: ax - the random index
 ;------------------------------------------------------------
 ChooseIndex Proc 
     push	ebp
@@ -203,6 +211,8 @@ ChooseIndex ENDP
 ;------------------------------------------------------------
 ;This is the regular partion
 ;This partion return the index of the new location of pivot 
+;input: Array, Left, Right, Pivot (16 Bytes)
+;output: ax - the new index of pivot
 ;------------------------------------------------------------
 Partition PROC
     push	ebp
@@ -334,6 +344,8 @@ Partition ENDP
 
 ;------------------------------------------------------------
 ;This is the QuickSort
+;input: Array, Left, Right (12 Bytes)
+;output: Nothing
 ;------------------------------------------------------------
 QuickSort PROC
     push	ebp
@@ -396,6 +408,8 @@ QuickSort ENDP
 ;------------------------------------------------------------
 ;This is the partion for collQuickSort
 ;This partion return the index of the new location of pivot 
+;input: Array, Left, Right, Pivot (16 Bytes)
+;output: ax - the new index of pivot
 ;------------------------------------------------------------
 PartitionColl PROC
     push	ebp
@@ -531,6 +545,8 @@ PartitionColl ENDP
 
 ;------------------------------------------------------------
 ;This is the coolQuickSort
+;input: Array, Left, Right (12 Bytes)
+;output: Nothing
 ;------------------------------------------------------------
 CollQuickSortSecond PROC
 
@@ -595,6 +611,8 @@ CollQuickSortSecond ENDP
 
 ;------------------------------------------------------------
 ;This Swap function
+;input: 2 places in array that we need to swap (8 Bytes)
+;output: Nothing
 ;------------------------------------------------------------
 SWAP PROC
     push	ebp
