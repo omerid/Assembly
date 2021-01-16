@@ -1,0 +1,5 @@
+N=7
+.data
+b word N
+Arr				word 19, 2, 8, 16,10, 11, 32
+DiffArr			word N dup(?)
