@@ -13,36 +13,38 @@ INCLUDE asm3_Q4_data.inc
 .data
 FirstLeft=0
 MyName BYTE		"Omer Idel, ID: 203347794", 10, 13, 0
-result BYTE		"The Result is: ",0
-DupliArr		word N dup(?)
+DupliArr		word NN dup(?)
 count			word 0 ; for Collatz
 newpivotindex	dword ?
-space			byte " ",13,10,0
+space			byte "	",13,10,0
 
 .code
 my_main PROC
 
     call	randomize
 
+	mov		edx, offset MyName
+	call	WriteString
+
 	push	offset Arr
 	push	offset DupliArr
-	push	lengthof N
+	push	lengthof NN
 	call	dupArr
 
 	push	offset DupliArr
 	push	FirstLeft
-	push	dword ptr (N-1)
+	push	dword ptr (NN-1)
 	call	QuickSort
 
 	push	offset Arr
 	push	FirstLeft
-	push	dword ptr (N-1)
+	push	dword ptr (NN-1)
 	call	CollQuickSortSecond
 
 	push	offset DupliArr
 	push	offset Arr
 	push	offset DiffArr
-	push	dword ptr N
+	push	dword ptr NN
 	call	FindTheDiff
 
 	mov		edx, offset DiffArr
@@ -66,10 +68,10 @@ FindTheDiff PROC
 	push	ecx
 	push	edx
 
-	mov		eax, [ebp+20] ; DupliArr
-	mov		ebx, [ebp+16] ; Arr
-	mov		edx, [ebp+12] ; DiffArr
-	mov		ecx, [ebp+8] ; Size
+	mov		eax, [ebp+20] ; offset of DupliArr
+	mov		ebx, [ebp+16] ; offset of Arr
+	mov		edx, [ebp+12] ;	offset of DiffArr
+	mov		ecx, [ebp+8] ; Size of Arrays
 	
 FindDiffLoop:
 	shl		ecx, 1
@@ -107,11 +109,11 @@ dupArr PROC
 	push	eax
 	push	ebx
 	push	ecx
-	push	edx
+	push	edx ; helper 
 
-	mov		eax, [ebp+16] 
-	mov		ebx, [ebp+12] 
-	mov		ecx, [ebp+8]
+	mov		eax, [ebp+16] ; offset of Arr
+	mov		ebx, [ebp+12] ; offset of DupliArr
+	mov		ecx, [ebp+8] ; Size of Arrays
 
 duplicateArr:
 	shl		ecx, 1
@@ -138,12 +140,12 @@ dupArr ENDP
 Collatz PROC
 	push	ebp
 	mov		ebp, esp
-	push	ecx
-	push	edx
+	push	ecx ; helper for mul 
+	push	edx ; helper for div
 	
 	xor		eax, eax
 
-    mov     ax, word ptr [ebp + 8] 
+    mov     ax, word ptr [ebp + 8] ; the input
     shr     ax, 1 ;check if even or not
     jnc     EvenNum ;if even
 	jmp		OddNum ;else
@@ -191,9 +193,11 @@ Collatz ENDP
 ChooseIndex Proc 
     push	ebp
     mov		ebp, esp
+
     push	edx
     mov		eax, [ebp+12] ; para right
     mov		edx, [ebp+8] ; para left
+
     sub		eax, edx
     sub		eax, 1
     cmp		eax, 0
@@ -218,6 +222,7 @@ Partition PROC
     push	ebp
     mov		ebp, esp
 	sub		esp, 8 ; ebp-4 for index_i, ebp-8 for index_j
+
     push	ecx
     push	edx
     push	ebx
